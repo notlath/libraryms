@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import supabase
 from supabase import create_client, Client
 import os
+import ssl
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -21,9 +22,24 @@ try:
     nltk.data.find("corpora/stopwords")
     nltk.data.find("vader_lexicon")
 except LookupError:
-    nltk.download("punkt")
-    nltk.download("stopwords")
-    nltk.download("vader_lexicon")
+    try:
+        # Try normal download first
+        nltk.download("punkt")
+        nltk.download("stopwords")
+        nltk.download("vader_lexicon")
+    except Exception:
+        # If SSL fails, create unverified context
+        try:
+            _create_unverified_https_context = ssl._create_unverified_context
+        except AttributeError:
+            pass
+        else:
+            ssl._create_default_https_context = _create_unverified_https_context
+
+        # Download with unverified context
+        nltk.download("punkt")
+        nltk.download("stopwords")
+        nltk.download("vader_lexicon")
 
 # Supabase Configuration
 SUPABASE_URL = os.getenv("SUPABASE_URL")
