@@ -1,15 +1,15 @@
 # Library Management System
 
-A modern web-based library management system built with Flask and enhanced with Natural Language Processing (NLP) capabilities for intelligent book search and sentiment analysis of user reviews.
+A modern web-based library management system built with Flask and enhanced with Natural Language Processing (NLP) capabilities for intelligent book search and sentiment analysis of user reviews. The system uses Supabase as a cloud database backend for reliable, scalable data storage.
 
 ## 🚀 Features
 
 ### Core Library Management
 
-- **Book Management**: Add, update, delete, and track library books
-- **Borrower Management**: Register and manage library members
-- **Circulation System**: Handle book borrowing and returning with due date tracking
-- **Transaction History**: Complete audit trail of all library transactions
+- **Book Management**: Add, update, delete, and track library books with real-time availability
+- **Borrower Management**: Register and manage library members with unique IDs
+- **Circulation System**: Handle book borrowing and returning with automated due date tracking
+- **Transaction History**: Complete audit trail of all library transactions stored in Supabase
 
 ### Advanced NLP Features
 
@@ -28,44 +28,143 @@ A modern web-based library management system built with Flask and enhanced with 
 
 - **Backend**: Python 3.x with Flask web framework
 - **Frontend**: HTML5, CSS3, Bootstrap 5, Jinja2 templating
+- **Database**: Supabase (PostgreSQL-based cloud database)
 - **NLP**: Natural Language Toolkit (NLTK)
-- **Data Storage**: JSON file-based persistence
+- **Environment Management**: python-dotenv for configuration
 - **Sentiment Analysis**: VADER (Valence Aware Dictionary and sEntiment Reasoner)
 
 ## 📋 Prerequisites
 
 - Python 3.7 or higher
 - pip (Python package installer)
+- Supabase account and project setup
+- Internet connection for Supabase database operations
 
-## 🔧 Installation
+## 🔧 Installation & Setup
 
-1. **Clone or download the project**
+### 1. Project Setup
 
-   ```bash
-   cd lib_ms
-   ```
+```cmd
+cd c:\Users\USer\Downloads\lib_ms
+```
 
-2. **Install required dependencies**
+### 2. Install Dependencies
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+```cmd
+pip install -r requirements.txt
+```
 
-3. **Download NLTK data** (automatically handled on first run)
-   - The application will automatically download required NLTK datasets:
-     - punkt (tokenizer)
-     - stopwords (common words to filter)
-     - vader_lexicon (sentiment analysis)
+### 3. Supabase Database Setup
+
+**Create a Supabase Project:**
+
+1. Go to [Supabase](https://supabase.com) and create a new project
+2. Get your project URL and API key from the project settings
+
+**Create Environment File:**
+Create a `.env` file in the project root with your Supabase credentials:
+
+```env
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_KEY=your_supabase_anon_key
+SECRET_KEY=your_flask_secret_key
+```
+
+**Create Database Tables:**
+Run the following SQL commands in your Supabase SQL Editor:
+
+```sql
+-- Books table
+CREATE TABLE books (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  author VARCHAR(255) NOT NULL,
+  isbn VARCHAR(20),
+  genre VARCHAR(100),
+  copies INTEGER DEFAULT 1,
+  available INTEGER DEFAULT 1,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Borrowers table
+CREATE TABLE borrowers (
+  id VARCHAR(20) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE,
+  phone VARCHAR(20),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Transactions table
+CREATE TABLE transactions (
+  id SERIAL PRIMARY KEY,
+  book_id INTEGER REFERENCES books(id),
+  borrower_id VARCHAR(20) REFERENCES borrowers(id),
+  borrow_date TIMESTAMP DEFAULT NOW(),
+  due_date TIMESTAMP,
+  return_date TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Reviews table
+CREATE TABLE reviews (
+  id SERIAL PRIMARY KEY,
+  book_id INTEGER REFERENCES books(id),
+  borrower_id VARCHAR(20) REFERENCES borrowers(id),
+  review_text TEXT,
+  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+  sentiment VARCHAR(20),
+  sentiment_scores JSONB,
+  timestamp TIMESTAMP DEFAULT NOW()
+);
+```
+
+### 4. Test Supabase Connection
+
+Create a test file to verify your connection:
+
+```python
+# test_supabase_connection.py
+import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
+
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+try:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    response = supabase.table("books").select("*").limit(1).execute()
+    print("✅ Successfully connected to Supabase!")
+except Exception as e:
+    print(f"❌ Connection failed: {e}")
+```
+
+Run the test:
+
+```cmd
+python test_supabase_connection.py
+```
 
 ## 🚀 Usage
 
 ### Starting the Application
 
-```bash
+```cmd
 python app.py
 ```
 
-The application will start on `http://localhost:5000` by default.
+The application will:
+
+- Automatically download required NLTK data on first run (punkt, stopwords, vader_lexicon)
+- Start the Flask development server
+- Be accessible at `http://localhost:5000`
+
+### Testing the Application
+
+Visit `http://localhost:5000/test_connection` to verify Supabase connectivity and table setup.
 
 ### Key Functionalities
 
@@ -109,9 +208,9 @@ The application will start on `http://localhost:5000` by default.
 
 ```
 lib_ms/
-├── app.py                 # Main Flask application
+├── app.py                 # Main Flask application with Supabase integration
 ├── requirements.txt       # Python dependencies
-├── library_data.json     # Data storage (auto-generated)
+├── .env                  # Environment variables (Supabase credentials)
 ├── README.md             # Project documentation
 └── templates/            # HTML templates
     ├── base.html         # Base template with Bootstrap
@@ -128,32 +227,49 @@ lib_ms/
 
 ## 💾 Data Storage
 
-The system uses JSON file-based storage (`library_data.json`) with the following structure:
+The system uses **Supabase** (PostgreSQL) for cloud-based data storage with the following schema:
 
-```json
-{
-  "books": {
-    "1": {
-      "title": "Book Title",
-      "author": "Author Name",
-      "isbn": "1234567890",
-      "genre": "Fiction",
-      "copies": 3,
-      "available": 2
-    }
-  },
-  "borrowers": {
-    "B0001": {
-      "name": "John Doe",
-      "email": "john@example.com",
-      "phone": "123-456-7890",
-      "borrowed_books": [1, 2]
-    }
-  },
-  "transactions": [...],
-  "reviews": {...}
-}
-```
+### Database Tables
+
+**books**
+
+- `id` (SERIAL PRIMARY KEY)
+- `title` (VARCHAR(255))
+- `author` (VARCHAR(255))
+- `isbn` (VARCHAR(20))
+- `genre` (VARCHAR(100))
+- `copies` (INTEGER)
+- `available` (INTEGER)
+- `created_at` (TIMESTAMP)
+
+**borrowers**
+
+- `id` (VARCHAR(20) PRIMARY KEY)
+- `name` (VARCHAR(255))
+- `email` (VARCHAR(255) UNIQUE)
+- `phone` (VARCHAR(20))
+- `created_at` (TIMESTAMP)
+
+**transactions**
+
+- `id` (SERIAL PRIMARY KEY)
+- `book_id` (INTEGER, FOREIGN KEY)
+- `borrower_id` (VARCHAR(20), FOREIGN KEY)
+- `borrow_date` (TIMESTAMP)
+- `due_date` (TIMESTAMP)
+- `return_date` (TIMESTAMP)
+- `created_at` (TIMESTAMP)
+
+**reviews**
+
+- `id` (SERIAL PRIMARY KEY)
+- `book_id` (INTEGER, FOREIGN KEY)
+- `borrower_id` (VARCHAR(20), FOREIGN KEY)
+- `review_text` (TEXT)
+- `rating` (INTEGER 1-5)
+- `sentiment` (VARCHAR(20))
+- `sentiment_scores` (JSONB)
+- `timestamp` (TIMESTAMP)
 
 ## 🔍 Search Algorithm
 
@@ -184,35 +300,54 @@ Sentiment summaries provide counts of positive, negative, and neutral reviews.
 
 ## ⚙️ Configuration
 
-### Secret Key
+### Environment Variables
 
-Change the Flask secret key in production:
+Configure the application through the `.env` file:
 
-```python
-app.secret_key = "your-production-secret-key"
+```env
+# Supabase Configuration
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_KEY=your_supabase_anon_key
+
+# Flask Configuration
+SECRET_KEY=your-production-secret-key
+
+# Optional: Custom Port
+PORT=5000
 ```
 
-### Default Loan Period
+### Application Settings
 
-Books are loaned for 14 days by default. Modify in the `borrow_book` method:
-
-```python
-def borrow_book(self, book_id, borrower_id, days=14):
-```
-
-### Data File Location
-
-Change the data storage file location:
+Modify settings in `app.py`:
 
 ```python
-library = LibraryManagementSystem("custom_data_file.json")
+# Default loan period (days)
+due_date = datetime.now() + timedelta(days=14)
+
+# Flask debug mode
+app.run(debug=True, port=5000)
 ```
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **NLTK Data Not Found**
+1. **Supabase Connection Failed**
+
+   ```cmd
+   python test_supabase_connection.py
+   ```
+
+   - Verify your `.env` file has correct SUPABASE_URL and SUPABASE_KEY
+   - Check internet connectivity
+   - Ensure Supabase project is active
+
+2. **Database Tables Don't Exist**
+
+   - Run the SQL commands in Supabase SQL Editor to create required tables
+   - Check table names match exactly: `books`, `borrowers`, `transactions`, `reviews`
+
+3. **NLTK Data Not Found**
 
    - The app automatically downloads required NLTK data on first run
    - If issues persist, manually run:
@@ -223,27 +358,38 @@ library = LibraryManagementSystem("custom_data_file.json")
      nltk.download('vader_lexicon')
      ```
 
-2. **Port Already in Use**
+4. **Port Already in Use**
 
    - Change the port in app.py:
      ```python
      app.run(debug=True, port=5001)
      ```
 
-3. **Permission Errors**
-   - Ensure write permissions for the application directory
-   - The app needs to create/modify `library_data.json`
+5. **Environment Variables Not Loading**
+   - Ensure `.env` file is in the project root directory
+   - Check file encoding (should be UTF-8)
+   - Verify no extra spaces around `=` in environment variables
+
+### Connection Test Endpoint
+
+Visit `http://localhost:5000/test_connection` to verify:
+
+- Supabase connectivity
+- Database table existence
+- Environment variable loading
 
 ## 🔮 Future Enhancements
 
-- **Database Integration**: Replace JSON with SQLite/PostgreSQL
 - **User Authentication**: Add login system for librarians and members
-- **Email Notifications**: Automated overdue notices
-- **Advanced Analytics**: Generate reports and statistics
+- **Advanced Analytics**: Generate reports and statistics from Supabase data
+- **Email Notifications**: Automated overdue notices using Supabase Edge Functions
 - **Book Recommendations**: ML-based recommendation system
 - **API Endpoints**: RESTful API for mobile app integration
-- **Barcode Scanning**: Physical book management
+- **Barcode Scanning**: Physical book management with ISBN lookup
 - **Multi-library Support**: Support for multiple library branches
+- **Real-time Updates**: WebSocket integration for live updates
+- **Advanced Search**: Full-text search using Supabase's PostgreSQL capabilities
+- **Data Backup**: Automated backup solutions using Supabase features
 
 ## 🤝 Contributing
 
@@ -263,37 +409,79 @@ For support, please open an issue in the repository or contact the development t
 
 ## 🎯 Getting Started Example
 
-1. **Start the application**:
+### Quick Start Guide
 
-   ```bash
+1. **Setup Supabase Database**:
+
+   ```sql
+   -- Run in Supabase SQL Editor
+   -- Copy the database creation scripts from the Installation section
+   ```
+
+2. **Configure Environment**:
+
+   ```env
+   # Create .env file
+   SUPABASE_URL=your_project_url
+   SUPABASE_KEY=your_anon_key
+   SECRET_KEY=your_secret_key
+   ```
+
+3. **Start the application**:
+
+   ```cmd
    python app.py
    ```
 
-2. **Add your first book**:
+4. **Test the connection**:
 
-   - Navigate to http://localhost:5000
+   - Visit `http://localhost:5000/test_connection`
+   - Verify all tables show "✅ Connected"
+
+5. **Add your first book**:
+
+   - Navigate to `http://localhost:5000`
    - Click "Add New Book"
-   - Fill in book details
+   - Fill in book details (Title, Author, ISBN, Genre, Copies)
 
-3. **Register a borrower**:
+6. **Register a borrower**:
 
    - Click "Add New Borrower"
-   - Enter member information
+   - Enter member information (ID, Name, Email, Phone)
 
-4. **Process a transaction**:
+7. **Process a transaction**:
 
    - Go to "Circulation"
    - Select book and borrower
    - Click "Borrow Book"
 
-5. **Search for books**:
+8. **Search for books**:
 
    - Use the search feature
    - Try different search terms to see NLP in action
 
-6. **Add a review**:
-   - View any book
-   - Add a review to see sentiment analysis
+9. **Add a review**:
+   - View any book details
+   - Add a review to see automatic sentiment analysis
+
+### Sample Data
+
+For testing, you can add these sample records:
+
+**Sample Book:**
+
+- Title: "The Great Gatsby"
+- Author: "F. Scott Fitzgerald"
+- ISBN: "9780743273565"
+- Genre: "Fiction"
+- Copies: 3
+
+**Sample Borrower:**
+
+- ID: "B001"
+- Name: "John Doe"
+- Email: "john.doe@email.com"
+- Phone: "555-0123"
 
 ---
 

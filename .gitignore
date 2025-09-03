@@ -1,1 +1,30 @@
+# Ignore environment variables
+.env
+*.env
+# Ignore Python bytecode files
+__pycache__/
+*.py[cod]
+# Ignore virtual environment directories
+venv/
+env/
+.venv/
+# Ignore IDE/editor specific files
+.vscode/
+.idea/
+# Ignore system files
+.DS_Store
+Thumbs.db
+# Ignore log files
+*.log
+# Ignore database files
+*.sqlite3
+# Ignore coverage reports
+htmlcov/
+.coverage
+# Ignore distribution/build files
+dist/
+build/
+*.egg-info/
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
 library_data.json
