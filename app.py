@@ -314,34 +314,34 @@ class LibraryManagementSystem:
     # Sentiment Analysis for User Reviews
     def add_review(self, book_id, borrower_id, review_text, rating):
         """Add a review with sentiment analysis"""
-         user-reviews
-        if book_id not in self.books:
-            return False, "Invalid book ID"
+        try:
+            # Perform sentiment analysis
+            sentiment_scores = self.sentiment_analyzer.polarity_scores(review_text)
+            sentiment = (
+                "positive"
+                if sentiment_scores["compound"] > 0.05
+                else "negative" if sentiment_scores["compound"] < -0.05 else "neutral"
+            )
 
-        # Perform sentiment analysis
-        sentiment_scores = self.sentiment_analyzer.polarity_scores(review_text)
-        sentiment = (
-            "neutral"
-            if sentiment_scores['neu'] >= 0.7
-            else "positive" if sentiment_scores['pos'] > sentiment_scores['neg'] else "negative"
-        )
+            response = (
+                supabase_client.table("reviews")
+                .insert(
+                    {
+                        "book_id": book_id,
+                        "borrower_id": borrower_id,
+                        "review_text": review_text,
+                        "rating": rating,
+                        "sentiment": sentiment,
+                        "sentiment_scores": sentiment_scores,
+                    }
+                )
+                .execute()
+            )
 
-        if book_id not in self.reviews:
-            self.reviews[book_id] = []
-
-        review = {
-            "review_id": len(self.reviews[book_id]) + 1,
-            "borrower_id": borrower_id,
-            "review_text": review_text,
-            "rating": rating,
-            "sentiment": sentiment,
-            "sentiment_scores": sentiment_scores,
-            "timestamp": datetime.now().isoformat(),
-        }
-
-        self.reviews[book_id].append(review)
-        self.save_data()
-        return True, f"Review added with {sentiment} sentiment"
+            return True, f"Review added with {sentiment} sentiment"
+        except Exception as e:
+            print(f"Error adding review: {e}")
+            return False, "Error adding review"
 
     def get_book_reviews(self, book_id):
         """Get all reviews for a book"""
@@ -511,7 +511,12 @@ def reviews(book_id):
     borrowers = library.get_all_borrowers()
 
     return render_template(
-        "reviews.html", book=book, reviews=reviews, sentiment_summary=sentiment_summary
+        "reviews.html",
+        book=book,
+        reviews=reviews,
+        sentiment_summary=sentiment_summary,
+        borrowers=borrowers,
+        book_id=book_id,
     )
 
 
@@ -535,8 +540,53 @@ def add_review(book_id):
 
         return redirect(url_for("reviews", book_id=book_id))
 
-    book = library.books[book_id]
-    return render_template("add_review.html", book=book, borrowers=library.borrowers)
+    book = books[book_id]
+    borrowers = library.get_all_borrowers()
+    return render_template(
+        "add_review.html", book=book, borrowers=borrowers, book_id=book_id
+    )
+
+
+@app.route("/test_connection")
+def test_connection():
+    """Test Supabase connection and table accessibility"""
+    try:
+        # Test basic connection
+        response = supabase_client.table("books").select("id").limit(1).execute()
+
+        # Test each table
+        tables_status = {}
+        tables = ["books", "borrowers", "transactions", "reviews"]
+
+        for table in tables:
+            try:
+                test_response = (
+                    supabase_client.table(table).select("*").limit(1).execute()
+                )
+                tables_status[table] = "✅ Connected"
+            except Exception as e:
+                tables_status[table] = f"❌ Error: {str(e)}"
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": "Supabase connection successful",
+                "tables": tables_status,
+                "supabase_url": SUPABASE_URL,
+            }
+        )
+
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": f"Connection failed: {str(e)}",
+                    "supabase_url": SUPABASE_URL,
+                }
+            ),
+            500,
+        )
 
 
 if __name__ == "__main__":
