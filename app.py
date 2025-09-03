@@ -228,9 +228,9 @@ class LibraryManagementSystem:
         # Perform sentiment analysis
         sentiment_scores = self.sentiment_analyzer.polarity_scores(review_text)
         sentiment = (
-            "positive"
-            if sentiment_scores["compound"] > 0.05
-            else "negative" if sentiment_scores["compound"] < -0.05 else "neutral"
+            "neutral"
+            if sentiment_scores['neu'] >= 0.7
+            else "positive" if sentiment_scores['pos'] > sentiment_scores['neg'] else "negative"
         )
 
         if book_id not in self.reviews:
