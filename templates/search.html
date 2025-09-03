@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Book Search</h2>
+
+<form method="POST" class="mb-4">
+    <div class="row">
+        <div class="col-md-8">
+            <input type="text" class="form-control" name="query" placeholder="Enter search terms..." 
+                   value="{{ query }}" required>
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="search_type">
+                <option value="all" {% if request.form.search_type == 'all' %}selected{% endif %}>All Fields</option>
+                <option value="title" {% if request.form.search_type == 'title' %}selected{% endif %}>Title</option>
+                <option value="author" {% if request.form.search_type == 'author' %}selected{% endif %}>Author</option>
+                <option value="genre" {% if request.form.search_type == 'genre' %}selected{% endif %}>Genre</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
+    </div>
+</form>
+
+{% if results %}
+<h3>Search Results</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Genre</th>
+            <th>Available</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in results %}
+        <tr>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.genre }}</td>
+            <td>{{ book.available }}/{{ book.copies }}</td>
+            <td>
+                <a href="{{ url_for('reviews', book_id=loop.index) }}" class="btn btn-sm btn-info">Reviews</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% elif query %}
+<div class="alert alert-info">No books found matching your search criteria.</div>
+{% endif %}
+{% endblock %}

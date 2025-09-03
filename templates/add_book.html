@@ -1,0 +1,41 @@
+{% extends "base.html" %} {% block content %}
+<h2>Add New Book</h2>
+<form method="POST">
+  <div class="mb-3">
+    <label for="title" class="form-label">Title</label>
+    <input type="text" class="form-control" id="title" name="title" required />
+  </div>
+  <div class="mb-3">
+    <label for="author" class="form-label">Author</label>
+    <input
+      type="text"
+      class="form-control"
+      id="author"
+      name="author"
+      required
+    />
+  </div>
+  <div class="mb-3">
+    <label for="isbn" class="form-label">ISBN</label>
+    <input type="text" class="form-control" id="isbn" name="isbn" required />
+  </div>
+  <div class="mb-3">
+    <label for="genre" class="form-label">Genre</label>
+    <input type="text" class="form-control" id="genre" name="genre" required />
+  </div>
+  <div class="mb-3">
+    <label for="copies" class="form-label">Number of Copies</label>
+    <input
+      type="number"
+      class="form-control"
+      id="copies"
+      name="copies"
+      value="1"
+      min="1"
+      required
+    />
+  </div>
+  <button type="submit" class="btn btn-primary">Add Book</button>
+  <a href="{{ url_for('books') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
