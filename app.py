@@ -314,34 +314,34 @@ class LibraryManagementSystem:
     # Sentiment Analysis for User Reviews
     def add_review(self, book_id, borrower_id, review_text, rating):
         """Add a review with sentiment analysis"""
-        try:
-            # Perform sentiment analysis
-            sentiment_scores = self.sentiment_analyzer.polarity_scores(review_text)
-            sentiment = (
-                "positive"
-                if sentiment_scores["compound"] > 0.05
-                else "negative" if sentiment_scores["compound"] < -0.05 else "neutral"
-            )
+         user-reviews
+        if book_id not in self.books:
+            return False, "Invalid book ID"
 
-            response = (
-                supabase_client.table("reviews")
-                .insert(
-                    {
-                        "book_id": book_id,
-                        "borrower_id": borrower_id,
-                        "review_text": review_text,
-                        "rating": rating,
-                        "sentiment": sentiment,
-                        "sentiment_scores": sentiment_scores,
-                    }
-                )
-                .execute()
-            )
+        # Perform sentiment analysis
+        sentiment_scores = self.sentiment_analyzer.polarity_scores(review_text)
+        sentiment = (
+            "neutral"
+            if sentiment_scores['neu'] >= 0.7
+            else "positive" if sentiment_scores['pos'] > sentiment_scores['neg'] else "negative"
+        )
 
-            return True, f"Review added with {sentiment} sentiment"
-        except Exception as e:
-            print(f"Error adding review: {e}")
-            return False, "Error adding review"
+        if book_id not in self.reviews:
+            self.reviews[book_id] = []
+
+        review = {
+            "review_id": len(self.reviews[book_id]) + 1,
+            "borrower_id": borrower_id,
+            "review_text": review_text,
+            "rating": rating,
+            "sentiment": sentiment,
+            "sentiment_scores": sentiment_scores,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+        self.reviews[book_id].append(review)
+        self.save_data()
+        return True, f"Review added with {sentiment} sentiment"
 
     def get_book_reviews(self, book_id):
         """Get all reviews for a book"""
