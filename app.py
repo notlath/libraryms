@@ -391,7 +391,11 @@ def reviews(book_id):
     sentiment_summary = library.get_sentiment_summary(book_id)
 
     return render_template(
-        "reviews.html", book=book, reviews=reviews, sentiment_summary=sentiment_summary
+        "reviews.html",
+        book=book,
+        reviews=reviews,
+        sentiment_summary=sentiment_summary,
+        book_id = book_id,
     )
 
 
@@ -415,7 +419,12 @@ def add_review(book_id):
         return redirect(url_for("reviews", book_id=book_id))
 
     book = library.books[book_id]
-    return render_template("add_review.html", book=book, borrowers=library.borrowers)
+    return render_template(
+        "add_review.html",
+        book=book,
+        borrowers=library.borrowers,
+        book_id=book_id,
+        )
 
 
 if __name__ == "__main__":
