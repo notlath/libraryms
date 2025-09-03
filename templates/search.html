@@ -42,7 +42,7 @@
             <td>{{ book.genre }}</td>
             <td>{{ book.available }}/{{ book.copies }}</td>
             <td>
-                <a href="{{ url_for('reviews', book_id=loop.index) }}" class="btn btn-sm btn-info">Reviews</a>
+                <a href="{{ url_for('reviews', book_id=book.id) }}" class="btn btn-sm btn-info">Reviews</a>
             </td>
         </tr>
         {% endfor %}
