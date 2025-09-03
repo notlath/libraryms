@@ -27,4 +27,6 @@ build/
 *.egg-info/
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+
+user-reviews
 library_data.json
