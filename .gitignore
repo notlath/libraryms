@@ -27,3 +27,5 @@ build/
 *.egg-info/
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+# Ignore test output
+.pytest_cache/
