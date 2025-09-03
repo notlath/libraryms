@@ -3,51 +3,48 @@
 <p class="text-muted">by {{ book.author }}</p>
 
 <div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Sentiment Analysis</h5>
-                <p>Positive: {{ sentiment_summary.positive }}</p>
-                <p>Negative: {{ sentiment_summary.negative }}</p>
-                <p>Neutral: {{ sentiment_summary.neutral }}</p>
-                <p>Total Reviews: {{ sentiment_summary.total }}</p>
-            </div>
-        </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Sentiment Analysis</h5>
+        <p>Positive: {{ sentiment_summary.positive }}</p>
+        <p>Negative: {{ sentiment_summary.negative }}</p>
+        <p>Neutral: {{ sentiment_summary.neutral }}</p>
+        <p>Total Reviews: {{ sentiment_summary.total }}</p>
+      </div>
     </div>
-    <div class="col-md-6">
-        <a
-            href="{{ url_for('add_review', book_id=book_id) }}"
-            class="btn btn-primary"
-            >Add Review</a
-        >
-    </div>
+  </div>
+  <div class="col-md-6">
+    <a
+      href="{{ url_for('add_review', book_id=book_id) }}"
+      class="btn btn-primary"
+      >Add Review</a
+    >
+  </div>
 </div>
 
 <h3>Reviews</h3>
 {% if reviews %} {% for review in reviews %}
 <div class="card mb-3">
-    <div class="card-body">
-        <div class="d-flex justify-content-between">
-            <h5 class="card-title">
-                {% if review.borrower_id in borrowers %} {{
-                borrowers[review.borrower_id].name }} {% else %} Anonymous {%
-                endif %}
-            </h5>
-            <span
-                class="badge bg-{% if review.sentiment == 'positive' %}success{% elif review.sentiment == 'negative' %}danger{% else %}secondary{% endif %}"
-            >
-                {{ review.sentiment.title() }}
-            </span>
-        </div>
-        <h6 class="card-subtitle mb-2 text-muted">
-            Rating: {{ review.rating }}/5
-        </h6>
-        <p class="card-text">{{ review.review_text }}</p>
-        <small class="text-muted">{{ review.timestamp[:10] }}</small>
+  <div class="card-body">
+    <div class="d-flex justify-content-between">
+      <h5 class="card-title">
+        {% if review.borrower_id in borrowers %} {{
+        borrowers[review.borrower_id].name }} {% else %} Anonymous {% endif %}
+      </h5>
+      <span
+        class="badge bg-{% if review.sentiment == 'positive' %}success{% elif review.sentiment == 'negative' %}danger{% else %}secondary{% endif %}"
+      >
+        {{ review.sentiment.title() }}
+      </span>
     </div>
+    <h6 class="card-subtitle mb-2 text-muted">Rating: {{ review.rating }}/5</h6>
+    <p class="card-text">{{ review.review_text }}</p>
+    <small class="text-muted">{{ review.created_at[:10] }}</small>
+  </div>
 </div>
 {% endfor %} {% else %}
 <div class="alert alert-info">
-    No reviews yet. Be the first to add a review!
+  No reviews yet. Be the first to add a review!
 </div>
 {% endif %} {% endblock %}

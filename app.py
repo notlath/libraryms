@@ -333,6 +333,7 @@ class LibraryManagementSystem:
                         "rating": rating,
                         "sentiment": sentiment,
                         "sentiment_scores": sentiment_scores,
+                        "created_at": datetime.now().isoformat(),
                     }
                 )
                 .execute()
