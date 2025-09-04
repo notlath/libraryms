@@ -467,6 +467,8 @@ def circulation():
     active_transactions = library.get_active_transactions()
     books = library.get_all_books()
     borrowers = library.get_all_borrowers()
+
+    print(active_transactions)
     return render_template(
         "circulation.html",
         transactions=active_transactions,

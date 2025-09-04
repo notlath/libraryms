@@ -45,14 +45,14 @@
   <tbody>
     {% for transaction in transactions %}
     <tr>
-      <td>{{ transaction.transaction_id }}</td>
+      <td>{{ transaction.id }}</td>
       <td>{{ books[transaction.book_id].title }}</td>
       <td>{{ borrowers[transaction.borrower_id].name }}</td>
       <td>{{ transaction.borrow_date[:10] }}</td>
       <td>{{ transaction.due_date[:10] }}</td>
       <td>
         <a
-          href="{{ url_for('return_book', transaction_id=transaction.transaction_id) }}"
+          href="{{ url_for('return_book', transaction_id=transaction.id) }}"
           class="btn btn-sm btn-success"
           >Return</a
         >
